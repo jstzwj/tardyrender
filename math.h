@@ -36,31 +36,31 @@ const static double tritable[26][3]
 	0.00000536441802978515625,9.3626757073098082799067286680886e-8,0.99999999999999561701517998752946
 };
 
-long abs(long n)
+long tardy_abs(long n)
 {
 	if (n < 0)
 		return -n;
 }
-double fabs(double n)
+double tardy_fabs(double n)
 {
 	if (n < 0)
 		return -n;
 }
-double pow(double n, int x)
+double tardy_pow(double n, int x)
 {
 	double result=1.0;
 	while (x-->0)
 		result *= n;
 	return result;
 }
-double exp(int n)
+double tardy_exp(int n)
 {
 	double result=1.0;
 	while (n-->0)
 		result *= LNE;
 	return result;
 }
-double sqrt(double n)
+double tardy_sqrt(double n)
 {
 	double val = n; //最终
 	double last; //保存上一个计算的值
@@ -78,7 +78,7 @@ double sqrt(double n)
 	}
 	return val;
 }
-double sin(double n)
+double tardy_sin(double n)
 {
 	int i;
 	int k = 1;
@@ -115,7 +115,7 @@ double sin(double n)
 	return k*sin;
 }
 
-double cos(double n)
+double tardy_cos(double n)
 {
 	int i;
 	int k = 1;
@@ -151,7 +151,7 @@ double cos(double n)
 }
 
 
-double tan(double n)
+double tardy_tan(double n)
 {
 	int i;
 	int k = 1;

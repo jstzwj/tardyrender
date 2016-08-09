@@ -14,8 +14,6 @@ TRenum ShadeModel;
 #define GL_PERSPECTIVE_CORRECTION_HINT
 #define GL_NICEST
 
-#define GL_PROJECTION
-#define GL_MODELVIEW
 
 
 //可开关的所有模式
@@ -27,24 +25,40 @@ struct camera
 	TRdouble position[3] = { 0.0,0.0,0.0 };
 	TRdouble target[3] = { 1.0 ,0.0 ,0.0 };
 };
+/*************************
+视口位置
+**************************/
+TRint viewportx, viewporty;
+TRint viewportw, viewporth;
+/****************
+图像颜色缓冲区
+****************/
 
-//图像缓冲区
 //缓冲区大小
-TRuint height=0;
-TRuint width=0;
+TRuint bufferheight=0;
+TRuint bufferwidth=0;
 //前缓冲区
-TRubyte * frontBuffer;
+ColorRGBAf * frontBuffer;
 //后缓冲区
-TRubyte * backBuffer;
+ColorRGBAf * backBuffer;
 //当前缓冲区
-TRubyte * currentBuffer;
+ColorRGBAf * currentColorBuffer=frontBuffer;
 //缓冲区是否分配
 bool isAssignBuffer=false;
+//缓冲区是否打开
+bool isOpenColorBuffer = true;
 //缓冲区背景颜色clearcolor
 ColorRGBAi clearcolor = {0,0,0,0};
+//改变窗口的背景颜色的设置
+TRvoid trClearColor(TRfloat r, TRfloat g, TRfloat b, TRfloat a);
+//选择缓冲区
+#define TR_FRONT 1
+#define TR_BACK 2
+TRvoid trDrawBuffer(TRenum mode);
 
-
-//深度缓冲区
+/**********************
+深度缓冲区
+***********************/
 //深度比较函数
 //不通过（输入的深度值不取代参考值）
 #define TR_NEVER
@@ -63,19 +77,39 @@ ColorRGBAi clearcolor = {0,0,0,0};
 //总是通过（输入的深度值取代参考值）
 #define TR_ALWAYS
 
-
 //缓冲区
 TRdouble * depthBuffer;
 //缓冲区清除值(0.0-1.0)
 TRdouble cleardepth;
+//设置深度缓存
+TRvoid trClearDepth(TRfloat n);
+//缓冲区是否打开
+bool isOpenDepthBuffer = false;
+
+/*********************
+清空缓冲区
+********************/
+//当前可写的颜色缓冲
+#define TR_COLOR_BUFFER_BIT 1
+//深度缓冲
+#define TR_DEPTH_BUFFER_BIT 2
+//累积缓冲
+#define	TR_ACCUM_BUFFER_BIT 4
+//模板缓冲
+#define TR_STENCIL_BUFFER_BIT 8
+TRvoid trclear(TRenum mode);
+
+/******************
+
+********************/
+
+
 
 
 
 TRvoid trShadeModel(TRenum model);//设置阴影平滑模式
-//改变窗口的背景颜色的设置
-TRvoid trClearColor(TRfloat r, TRfloat g, TRfloat b, TRfloat a );
-//设置深度缓存
-TRvoid trClearDepth(TRfloat n);
+
+
 TRvoid trEnable(TRenum mode);//允许深度测试
 TRvoid trDepthFunc(TRenum mode);//设置深度测试类型
 TRvoid trHint();//进行透视校正
@@ -89,20 +123,71 @@ TRvoid trdPerspective(TRdouble fovy, TRdouble aspect, TRdouble zNear, TRdouble z
 
 
 
+
+
 TRvoid trShadeModel(TRenum model)
 {
 	return TRvoid();
 }
 TRvoid trClearColor(TRfloat r, TRfloat g, TRfloat b, TRfloat a)
 {
-	clearcolor.red = r * 255;
-	clearcolor.green = g * 255;
-	clearcolor.blue = b * 255;
-	clearcolor.alpha = a * 255;
+	clearcolor.red = r;
+	clearcolor.green = g;
+	clearcolor.blue = b;
+	clearcolor.alpha = a;
+}
+TRvoid trDrawBuffer(TRenum mode)
+{
+	switch (mode)
+	{
+	case TR_FRONT:
+		currentColorBuffer = frontBuffer;
+		break;
+	case TR_BACK:
+		currentColorBuffer = backBuffer;
+		break;
+	default:
+		//TODO ERROR
+	}
 }
 TRvoid trClearDepth(TRfloat n)
 {
 	cleardepth = n;
+}
+
+TRvoid trclear(TRenum mode)
+{
+	TRint i, j;
+	if (mode & TR_COLOR_BUFFER_BIT == TR_COLOR_BUFFER_BIT)
+	{
+		for (i = 0; i < bufferheight;++i)
+		{
+			for (j = 0; j < bufferwidth;++j)
+			{
+				currentColorBuffer[i*bufferheight + j] = clearcolor;
+			}
+		}
+	}
+	if (mode & TR_DEPTH_BUFFER_BIT == TR_DEPTH_BUFFER_BIT)
+	{
+		for (i = 0; i < bufferheight; ++i)
+		{
+			for (j = 0; j < bufferwidth; ++j)
+			{
+				depthBuffer[i*bufferheight + j] = cleardepth;
+			}
+		}
+	}
+	if (mode & TR_ACCUM_BUFFER_BIT == TR_ACCUM_BUFFER_BIT)
+	{
+		//TODO
+		//清理积累缓存
+	}
+	if (mode & TR_STENCIL_BUFFER_BIT == TR_STENCIL_BUFFER_BIT)
+	{
+		//TODO
+		//清理模板缓存
+	}
 }
 
 TRvoid trEnable(TRenum mode)
@@ -125,13 +210,34 @@ TRvoid trHint()
 {
 	return TRvoid();
 }
-inline TRvoid trViewport(TRint x, TRint y, TRsizei width, TRsizei height)
+//视口的左上角和视口的高与宽
+TRvoid trViewport(TRint x, TRint y, TRsizei width, TRsizei height)
 {
-	return TRvoid();
+	//第一次调用分配缓冲区空间
+	if (isAssignBuffer == false)
+	{
+		bufferheight = height;
+		bufferwidth = width;
+		//颜色缓冲打开
+		if (isOpenColorBuffer==true)
+		{
+			frontBuffer = (ColorRGBAf *)malloc(sizeof(ColorRGBAf)*bufferheight*bufferwidth);
+			backBuffer = (ColorRGBAf *)malloc(sizeof(ColorRGBAf)*bufferheight*bufferwidth);
+		}
+		//深度缓冲打开
+		if (isOpenDepthBuffer == true)
+		{
+			depthBuffer = (TRdouble *)malloc(sizeof(TRdouble)*bufferheight*bufferwidth);
+		}
+	}
+	viewportx = x;
+	viewporty = y;
+	viewportw = width;
+	viewporth = height;
 }
 
 
-inline TRvoid trdPerspective(TRdouble fovy, TRdouble aspect, TRdouble zNear, TRdouble zFar)
+TRvoid trdPerspective(TRdouble fovy, TRdouble aspect, TRdouble zNear, TRdouble zFar)
 {
 	return TRvoid();
 }

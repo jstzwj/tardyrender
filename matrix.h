@@ -98,7 +98,7 @@ TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs);
 //向量归一化
 TRvoid trNormalizeVector(TRdouble *vec)
 {
-	double h = sqrt(vec[0]* vec[0]+ vec[1]* vec[1]+ vec[2]* vec[2]+ vec[3]* vec[3]);
+	double h = tardy_sqrt(vec[0]* vec[0]+ vec[1]* vec[1]+ vec[2]* vec[2]+ vec[3]* vec[3]);
 	vec[0] = vec[0] / h;
 	vec[1] = vec[1] / h;
 	vec[2] = vec[2] / h;
@@ -165,9 +165,9 @@ TRvoid trRotated(TRdouble angle, TRdouble x, TRdouble y, TRdouble z)
 	TRdouble h;
 	TRdouble sinangle;
 	TRdouble cosangle;
-	sinangle = sin(angle);
-	cosangle = cos(angle);
-	h == sqrt(x*x + y*y + z*z);
+	sinangle = tardy_sin(angle);
+	cosangle = tardy_cos(angle);
+	h = tardy_sqrt(x*x + y*y + z*z);
 	if (h != 1)
 	{
 		x = x / h;
@@ -196,12 +196,12 @@ TRvoid trRotated(TRdouble angle, TRdouble x, TRdouble y, TRdouble z)
 TRvoid trRotatef(TRfloat angle, TRfloat x, TRfloat y, TRfloat z)
 {
 	TRdouble temp[16];
-	TRdouble h;
+	TRfloat h;
 	TRdouble sinangle;
 	TRdouble cosangle;
-	sinangle = sin(angle);
-	cosangle = cos(angle);
-	h == sqrt(x*x + y*y + z*z);
+	sinangle = tardy_sin(angle);
+	cosangle = tardy_cos(angle);
+	h = (TRfloat)tardy_sqrt(x*x + y*y + z*z);
 	if (h != 1&&h>1e-6)
 	{
 		x = x / h;

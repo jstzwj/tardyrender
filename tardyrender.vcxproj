@@ -158,7 +158,7 @@
     <ClInclude Include="vertex_buffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="源2.cpp" />
+    <ClCompile Include="源.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

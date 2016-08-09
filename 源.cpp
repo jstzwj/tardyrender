@@ -1,4 +1,6 @@
 #include <windows.h>
+#include"tardyrender.h"
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
@@ -56,6 +58,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		NULL); // creation parameters    
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
+	//do something
+	//各种initialize
+	trClearColor(1.0,1.0,1.0,0.0);
+	//设置相机
+	trViewport(0, 0, (TRint)768, (TRint)1024);//重置当前视口
+	trMatrixMode(TR_PROJECTION);//选择投影矩阵
+	trLoadIdentity();//重置选择好的投影矩阵
+					 // gluPerspective(45.0, (GLfloat)width/(GLfloat)height, 0.1, 100.0);//建立透视投影矩阵
+					 //glMatirxMode(GL_MODELVIEW);//以下2句和上面出现的解释一样
+
+	//开始绘图
+	trclear(TR_COLOR_BUFFER_BIT | TR_DEPTH_BUFFER_BIT);
+
+
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);

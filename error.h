@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ERROR
-#define ERROR
+#ifndef TARDY_ERROR
+#define TARDY_ERROR
 
 
 
@@ -42,4 +42,4 @@ void callError(char * str)
 	tmp.what = str;
 	mfun(tmp);
 }
-#endif // !ERROR
+#endif // !TARDY_ERROR
