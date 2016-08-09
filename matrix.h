@@ -2,6 +2,8 @@
 #ifndef MATRIX
 #define MATRIX
 #include"types.h"
+#include"math.h"
+
 
 //矩阵行优先，与opengl相反，transpose列主序
 
@@ -68,8 +70,12 @@ TRvoid trLoadIdentity();
 TRvoid trTranslatef(TRfloat x, TRfloat y, TRfloat z);
 TRvoid trTranslated(TRdouble x, TRdouble y, TRdouble z);
 //旋转矩阵
-TRvoid trRotatef();
-TRvoid trScalef();
+TRvoid trRotated(TRdouble angle, TRdouble x, TRdouble y, TRdouble z);
+TRvoid trRotatef(TRfloat angle, TRfloat x, TRfloat y, TRfloat z);
+
+//缩放矩阵
+TRvoid trScalef(TRfloat x, TRfloat y, TRfloat z);
+TRvoid trScaled(TRdouble x, TRdouble y, TRdouble z);
 //右乘栈顶矩阵并放回栈顶
 TRvoid trMultMatrixf(TRfloat *m);
 TRvoid trMultMatrixd(TRdouble *m);
@@ -89,6 +95,19 @@ TRint stackTop=0;
 TRvoid trCopyMatrix(TRdouble * to,TRdouble * from);
 //矩阵相乘
 TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs);
+//向量归一化
+TRvoid trNormalizeVector(TRdouble *vec)
+{
+	double h = sqrt(vec[0]* vec[0]+ vec[1]* vec[1]+ vec[2]* vec[2]+ vec[3]* vec[3]);
+	vec[0] = vec[0] / h;
+	vec[1] = vec[1] / h;
+	vec[2] = vec[2] / h;
+	vec[3] = vec[3] / h;
+}
+
+
+
+
 
 TRvoid trMatrixMode(TRenum mode)
 {
@@ -116,23 +135,144 @@ TRvoid trMatrixMode(TRenum mode)
 //加载单位矩阵
 TRvoid trLoadIdentity()
 {
-	trCopyMatrix(matrix_stack[stackTop],IdentityMatrix);
+	trCopyMatrix(CurrentMatrix,IdentityMatrix);
 }
 //平移矩阵
 TRvoid trTranslatef(TRfloat x, TRfloat y, TRfloat z)
 {
-
-	return TRvoid();
+	TRdouble temp[16];
+	trCopyMatrix(temp,IdentityMatrix);
+	temp[3 * 4 + 0] = x;
+	temp[3 * 4 + 1] = y;
+	temp[3 * 4 + 2] = z;
+	//相乘
+	trMultiMatrix(CurrentMatrix,temp);
 }
 //平移矩阵
 TRvoid trTranslated(TRdouble x, TRdouble y, TRdouble z)
 {
-	return TRvoid();
+	TRdouble temp[16];
+	trCopyMatrix(temp, IdentityMatrix);
+	temp[3 * 4 + 0] = x;
+	temp[3 * 4 + 1] = y;
+	temp[3 * 4 + 2] = z;
+	//相乘
+	trMultiMatrix(CurrentMatrix, temp);
+}
+TRvoid trRotated(TRdouble angle, TRdouble x, TRdouble y, TRdouble z)
+{
+	TRdouble temp[16];
+	TRdouble h;
+	TRdouble sinangle;
+	TRdouble cosangle;
+	sinangle = sin(angle);
+	cosangle = cos(angle);
+	h == sqrt(x*x + y*y + z*z);
+	if (h != 1)
+	{
+		x = x / h;
+		y = y / h;
+		z = z / h;
+	}
+	temp[0 * 4 + 0] = x*x+(1-x*x)*cosangle;
+	temp[0 * 4 + 1] = x*y*(1-cosangle)+z*sinangle;
+	temp[0 * 4 + 2] = x*z*(1-cosangle)-y*sinangle;
+	temp[0 * 4 + 3] = 0;
+	temp[1 * 4 + 0] = x*y*(1-cosangle)-z*sinangle;
+	temp[1 * 4 + 1] = y*y+(1-y*y)*cosangle;
+	temp[1 * 4 + 2] = y*z*(1-cosangle)+x*sinangle;
+	temp[1 * 4 + 3] = 0;
+	temp[2 * 4 + 0] = x*z*(1-cosangle)+y*sinangle;
+	temp[2 * 4 + 1] = y*z*(1-cosangle)-x*sinangle;
+	temp[2 * 4 + 2] = z*z+(1-z*z)*cosangle;
+	temp[2 * 4 + 3] = 0;
+	temp[3 * 4 + 0] = 0;
+	temp[3 * 4 + 1] = 0;
+	temp[3 * 4 + 2] = 0;
+	temp[3 * 4 + 3] = 1;
+	//相乘
+	trMultiMatrix(CurrentMatrix, temp);
+}
+TRvoid trRotatef(TRfloat angle, TRfloat x, TRfloat y, TRfloat z)
+{
+	TRdouble temp[16];
+	TRdouble h;
+	TRdouble sinangle;
+	TRdouble cosangle;
+	sinangle = sin(angle);
+	cosangle = cos(angle);
+	h == sqrt(x*x + y*y + z*z);
+	if (h != 1&&h>1e-6)
+	{
+		x = x / h;
+		y = y / h;
+		z = z / h;
+	}
+	temp[0 * 4 + 0] = x*x + (1 - x*x)*cosangle;
+	temp[0 * 4 + 1] = x*y*(1 - cosangle) + z*sinangle;
+	temp[0 * 4 + 2] = x*z*(1 - cosangle) - y*sinangle;
+	temp[0 * 4 + 3] = 0;
+	temp[1 * 4 + 0] = x*y*(1 - cosangle) - z*sinangle;
+	temp[1 * 4 + 1] = y*y + (1 - y*y)*cosangle;
+	temp[1 * 4 + 2] = y*z*(1 - cosangle) + x*sinangle;
+	temp[1 * 4 + 3] = 0;
+	temp[2 * 4 + 0] = x*z*(1 - cosangle) + y*sinangle;
+	temp[2 * 4 + 1] = y*z*(1 - cosangle) - x*sinangle;
+	temp[2 * 4 + 2] = z*z + (1 - z*z)*cosangle;
+	temp[2 * 4 + 3] = 0;
+	temp[3 * 4 + 0] = 0;
+	temp[3 * 4 + 1] = 0;
+	temp[3 * 4 + 2] = 0;
+	temp[3 * 4 + 3] = 1;
+	//相乘
+	trMultiMatrix(CurrentMatrix, temp);
+}
+//缩放矩阵
+TRvoid trScalef(TRfloat x, TRfloat y, TRfloat z)
+{
+	TRdouble temp[16];
+	trCopyMatrix(temp, IdentityMatrix);
+	temp[0 * 4 + 0] = x;
+	temp[1 * 4 + 1] = y;
+	temp[2 * 4 + 2] = z;
+	//相乘
+	trMultiMatrix(CurrentMatrix, temp);
+}
+//缩放矩阵
+TRvoid trScaled(TRdouble x, TRdouble y, TRdouble z)
+{
+	TRdouble temp[16];
+	trCopyMatrix(temp, IdentityMatrix);
+	temp[0 * 4 + 0] = x;
+	temp[1 * 4 + 1] = y;
+	temp[2 * 4 + 2] = z;
+	//相乘
+	trMultiMatrix(CurrentMatrix, temp);
+}
+TRvoid trMultMatrixf(TRfloat * m)
+{
+	TRint i;
+	TRdouble tmp[16];
+	for (i = 0; i < 16;++i)
+	{
+		tmp[i] = m[i];
+	}
+	trMultiMatrix(matrix_stack[stackTop],tmp);
+}
+TRvoid trMultMatrixd(TRdouble * m)
+{
+	trMultiMatrix(matrix_stack[stackTop], m);
 }
 //加载矩阵
 TRvoid trLoadMatrixf(TRfloat * m)
 {
-	trCopyMatrix(CurrentMatrix, (TRdouble *)m);
+	TRint i;
+	TRdouble tmp[16];
+	for (i = 0; i < 16; ++i)
+	{
+		tmp[i] = m[i];
+	}
+	trCopyMatrix(CurrentMatrix, tmp);
 }
 //加载矩阵
 TRvoid trLoadMatrixd(TRdouble * m)
@@ -142,22 +282,38 @@ TRvoid trLoadMatrixd(TRdouble * m)
 //加载转置矩阵
 TRvoid trLoadTransposeMatrixf(TRfloat * m)
 {
-	return TRvoid();
+	TRint i, j, k;
+	for (i = 0; i < 4;++i)
+	{
+		for (j = 0; j < 4;++j)
+		{
+			CurrentMatrix[j*4+i] = m[i*4+j];
+		}
+	}
 }
 //加载转置矩阵
 TRvoid trLoadTransposeMatrixd(TRdouble * m)
 {
-	return TRvoid();
+	TRint i, j, k;
+	for (i = 0; i < 4; ++i)
+	{
+		for (j = 0; j < 4; ++j)
+		{
+			CurrentMatrix[j * 4 + i] = m[i * 4 + j];
+		}
+	}
 }
 //压入矩阵
-inline TRvoid trPushMatrix(TRdouble * m)
+TRvoid trPushMatrix(TRdouble * m)
 {
-	return TRvoid();
+	trCopyMatrix(matrix_stack[stackTop],CurrentMatrix);
+	++stackTop;
 }
 //弹出矩阵
 inline TRvoid trPopMatrix(TRdouble * m)
 {
-	return TRvoid();
+	trCopyMatrix(CurrentMatrix, matrix_stack[stackTop]);
+	--stackTop;
 }
 //复制矩阵
 TRvoid trCopyMatrix(TRdouble * to, TRdouble * from)
