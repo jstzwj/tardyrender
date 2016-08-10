@@ -40,11 +40,15 @@ long tardy_abs(long n)
 {
 	if (n < 0)
 		return -n;
+	else
+		return n;
 }
 double tardy_fabs(double n)
 {
 	if (n < 0)
 		return -n;
+	else
+		return n;
 }
 double tardy_pow(double n, int x)
 {

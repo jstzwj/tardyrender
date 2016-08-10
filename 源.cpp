@@ -1,22 +1,96 @@
 #include <windows.h>
 #include"tardyrender.h"
 
+void WinFlush(HWND hwnd,ColorRGBAf * src, TRuint w,TRuint h)
+{
+	HDC hdc;
+	HBRUSH NewBrush;
+	PAINTSTRUCT ps;
+	ColorRGBAf c;
+	HDC hmemorydc, hmemorydc2;
+	HBITMAP bimp, bimp2;
+
+	static TRuint oldw = w;
+	static TRuint oldh = h;
+	static UINT * winbuffer = (UINT *)malloc(sizeof(UINT)*w*h * 4);
+	if (oldw!=w||oldh!=h)
+	{
+		free(winbuffer);
+		winbuffer = (UINT *)malloc(sizeof(UINT)*w*h * 4);
+	}
+	
+	for (int i = 0; i < h; ++i)
+	{
+		for (int j = 0; j < 4*w; j+=4)
+		{
+			winbuffer[i*w *4 + j] = src[i*w + j>>2].red * 255;
+			winbuffer[i*w * 4 + j+1] = src[i*w + j>>2].green * 255;
+			winbuffer[i*w * 4 + j+2] = src[i*w + j>>2].blue * 255;
+			winbuffer[i*w * 4 + j+3] = src[i*w + j>>2].alpha * 255;
+		}
+	}
+
+
+
+	hdc = BeginPaint(hwnd, &ps);
+	//创建内存设备
+	hmemorydc = CreateCompatibleDC(GetDC(hwnd));
+	//在内存设备上创建兼容位图
+	CreateCompatibleBitmap(hmemorydc, w, h);
+	//创建位图
+	bimp=CreateBitmap(w,h,1,32,winbuffer);
+	//加载位图
+	//bimp = (HBITMAP)LoadImage(NULL, L"C:\\aa.bmp", IMAGE_BITMAP, w, h, LR_LOADFROMFILE);
+	//选择位图到内存设备
+	SelectObject(hmemorydc, bimp);
+
+	//画图，先画到内存设备上
+	BitBlt(hmemorydc, 0, 0, 1280, 800, (HDC)bimp, 0, 0, SRCCOPY);
+	//内存设备画到屏幕设备上
+	BitBlt(hdc, 0, 0, 1280, 800, hmemorydc, 0, 0, SRCCOPY);
+	EndPaint(hwnd, &ps);
+
+	hdc = GetDC(hwnd);
+	
+	ReleaseDC(hwnd, hdc);
+}
+
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
-	HDC hdc;
-	PAINTSTRUCT ps;
-	RECT rect;
+	//HDC hdc;
+	//PAINTSTRUCT ps;
+	static RECT rect;
+	//HBRUSH NewBrush;
+
 	switch (message)
 	{
 	case WM_CREATE:
 		//PlaySound(TEXT("hellowin.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		//do something
+		//各种initialize
+		trClearColor(1.0, 1.0, 1.0, 1.0);
 		return 0;
+	case WM_SIZE:
+		GetWindowRect(hwnd,&rect);
+		//设置相机
+		trViewport(0, 0, (TRint)(rect.right - rect.left), (TRint)(rect.bottom - rect.top));//重置当前视口
+		trMatrixMode(TR_PROJECTION);//选择投影矩阵
+		trLoadIdentity();//重置选择好的投影矩阵
+
+
 	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
+		/*hdc = BeginPaint(hwnd, &ps);
 		GetClientRect(hwnd, &rect);
 		DrawText(hdc, TEXT("Hello, Windows 98!"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-		EndPaint(hwnd, &ps);
+		EndPaint(hwnd, &ps);*/
+		//开始绘图
+		trClear(TR_COLOR_BUFFER_BIT | TR_DEPTH_BUFFER_BIT);
+		trBegin(TR_LINES);
+
+		trEnd();
+		WinFlush(hwnd, frontBuffer, rect.right - rect.left, rect.bottom - rect.top);
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -58,19 +132,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		NULL); // creation parameters    
 	ShowWindow(hwnd, iCmdShow);
 	UpdateWindow(hwnd);
-	//do something
-	//各种initialize
-	trClearColor(1.0,1.0,1.0,0.0);
-	//设置相机
-	trViewport(0, 0, (TRint)768, (TRint)1024);//重置当前视口
-	trMatrixMode(TR_PROJECTION);//选择投影矩阵
-	trLoadIdentity();//重置选择好的投影矩阵
-					 // gluPerspective(45.0, (GLfloat)width/(GLfloat)height, 0.1, 100.0);//建立透视投影矩阵
-					 //glMatirxMode(GL_MODELVIEW);//以下2句和上面出现的解释一样
-
-	//开始绘图
-	trclear(TR_COLOR_BUFFER_BIT | TR_DEPTH_BUFFER_BIT);
-
 
 	while (GetMessage(&msg, NULL, 0, 0))
 	{

@@ -9,7 +9,6 @@ TRenum ShadeModel;
 #define TR_FLAT
 #define TR_SMOOTH
 
-#define GL_LEQUAL
 
 #define GL_PERSPECTIVE_CORRECTION_HINT
 #define GL_NICEST
@@ -44,11 +43,11 @@ ColorRGBAf * backBuffer;
 //当前缓冲区
 ColorRGBAf * currentColorBuffer=frontBuffer;
 //缓冲区是否分配
-bool isAssignBuffer=false;
+TRbool isAssignBuffer=TR_FALSE;
 //缓冲区是否打开
-bool isOpenColorBuffer = true;
+TRbool isOpenColorBuffer = TR_TRUE;
 //缓冲区背景颜色clearcolor
-ColorRGBAi clearcolor = {0,0,0,0};
+ColorRGBAf clearcolor = {0,0,0,1};
 //改变窗口的背景颜色的设置
 TRvoid trClearColor(TRfloat r, TRfloat g, TRfloat b, TRfloat a);
 //选择缓冲区
@@ -97,14 +96,52 @@ bool isOpenDepthBuffer = false;
 #define	TR_ACCUM_BUFFER_BIT 4
 //模板缓冲
 #define TR_STENCIL_BUFFER_BIT 8
-TRvoid trclear(TRenum mode);
+TRvoid trClear(TRenum mode);
 
 /******************
-
+绘图函数
 ********************/
+/* BeginMode */
+#define TR_POINTS 1
+#define TR_LINES 2
+#define TR_POLYGON 3
+#define TR_TRIANGLES 4
+#define TR_QUADS 5
+#define TR_LINE_STRIP 6
+#define TR_LINE_LOOP 7
+#define TR_TRIANGLE_STRIP 8
+#define TR_TRIANGLE_FAN 9
+#define TRQUAD_STRIP 10
+TRenum currentDrawMode=64;
+TRvoid trBegin(TRenum mode);
+TRvoid trEnd();
+TRvoid trFinish();
+TRvoid trFlush();
 
-
-
+TRvoid trVertex2d(TRdouble x, TRdouble y);
+TRvoid trVertex2dv(const TRdouble *v);
+TRvoid trVertex2f(TRfloat x, TRfloat y);
+TRvoid trVertex2fv(const TRfloat *v);
+TRvoid trVertex2i(TRint x, TRint y);
+TRvoid trVertex2iv(const TRint *v);
+TRvoid trVertex2s(TRshort x, TRshort y);
+TRvoid trVertex2sv(const TRshort *v);
+TRvoid trVertex3d(TRdouble x, TRdouble y, TRdouble z);
+TRvoid trVertex3dv(const TRdouble *v);
+TRvoid trVertex3f(TRfloat x, TRfloat y, TRfloat z);
+TRvoid trVertex3fv(const TRfloat *v);
+TRvoid trVertex3i(TRint x, TRint y, TRint z);
+TRvoid trVertex3iv(const TRint *v);
+TRvoid trVertex3s(TRshort x, TRshort y, TRshort z);
+TRvoid trVertex3sv(const TRshort *v);
+TRvoid trVertex4d(TRdouble x, TRdouble y, TRdouble z, TRdouble w);
+TRvoid trVertex4dv(const TRdouble *v);
+TRvoid trVertex4f(TRfloat x, TRfloat y, TRfloat z, TRfloat w);
+TRvoid trVertex4fv(const TRfloat *v);
+TRvoid trVertex4i(TRint x, TRint y, TRint z, TRint w);
+TRvoid trVertex4iv(const TRint *v);
+TRvoid trVertex4s(TRshort x, TRshort y, TRshort z, TRshort w);
+TRvoid trVertex4sv(const TRshort *v);
 
 
 TRvoid trShadeModel(TRenum model);//设置阴影平滑模式
@@ -148,6 +185,7 @@ TRvoid trDrawBuffer(TRenum mode)
 		break;
 	default:
 		//TODO ERROR
+		break;
 	}
 }
 TRvoid trClearDepth(TRfloat n)
@@ -155,39 +193,211 @@ TRvoid trClearDepth(TRfloat n)
 	cleardepth = n;
 }
 
-TRvoid trclear(TRenum mode)
+TRvoid trClear(TRenum mode)
 {
-	TRint i, j;
-	if (mode & TR_COLOR_BUFFER_BIT == TR_COLOR_BUFFER_BIT)
+	TRuint i, j;
+	//颜色缓冲打开
+	if (isOpenColorBuffer == TR_TRUE)
 	{
-		for (i = 0; i < bufferheight;++i)
+		if ((mode & TR_COLOR_BUFFER_BIT) == TR_COLOR_BUFFER_BIT)
 		{
-			for (j = 0; j < bufferwidth;++j)
+			for (i = 0; i < bufferheight; ++i)
 			{
-				currentColorBuffer[i*bufferheight + j] = clearcolor;
+				for (j = 0; j < bufferwidth; ++j)
+				{
+					currentColorBuffer[i*bufferwidth + j] = clearcolor;
+				}
 			}
 		}
 	}
-	if (mode & TR_DEPTH_BUFFER_BIT == TR_DEPTH_BUFFER_BIT)
+	//深度缓冲打开
+	if (isOpenDepthBuffer== TR_TRUE)
 	{
-		for (i = 0; i < bufferheight; ++i)
+		if ((mode & TR_DEPTH_BUFFER_BIT) == TR_DEPTH_BUFFER_BIT)
 		{
-			for (j = 0; j < bufferwidth; ++j)
+			for (i = 0; i < bufferheight; ++i)
 			{
-				depthBuffer[i*bufferheight + j] = cleardepth;
+				for (j = 0; j < bufferwidth; ++j)
+				{
+					depthBuffer[i*bufferwidth + j] = cleardepth;
+				}
 			}
 		}
 	}
-	if (mode & TR_ACCUM_BUFFER_BIT == TR_ACCUM_BUFFER_BIT)
+	//TODO 判断该缓冲是否打开，防止内存泄漏
+	if ((mode & TR_ACCUM_BUFFER_BIT) == TR_ACCUM_BUFFER_BIT)
 	{
 		//TODO
 		//清理积累缓存
 	}
-	if (mode & TR_STENCIL_BUFFER_BIT == TR_STENCIL_BUFFER_BIT)
+	if ((mode & TR_STENCIL_BUFFER_BIT) == TR_STENCIL_BUFFER_BIT)
 	{
 		//TODO
 		//清理模板缓存
 	}
+}
+
+TRvoid trBegin(TRenum mode)
+{
+	currentDrawMode = mode;
+	switch (mode)
+	{
+	case TR_POINTS:
+		break;
+	case TR_LINES:
+		break;
+	case TR_POLYGON:
+		break;
+	case TR_TRIANGLES:
+		break;
+	case TR_QUADS:
+		break;
+	case TR_LINE_STRIP:
+		break;
+	case TR_LINE_LOOP:
+		break;
+	case TR_TRIANGLE_STRIP:
+		break;
+	case TR_TRIANGLE_FAN:
+		break;
+	case TRQUAD_STRIP:
+		break;
+	}
+}
+
+TRvoid trEnd()
+{
+	return TRvoid();
+}
+
+TRvoid trFinish()
+{
+	return TRvoid();
+}
+
+TRvoid trFlush()
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2d(TRdouble x, TRdouble y)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2dv(const TRdouble * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2f(TRfloat x, TRfloat y)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2fv(const TRfloat * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2i(TRint x, TRint y)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2iv(const TRint * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2s(TRshort x, TRshort y)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex2sv(const TRshort * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3d(TRdouble x, TRdouble y, TRdouble z)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3dv(const TRdouble * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3f(TRfloat x, TRfloat y, TRfloat z)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3fv(const TRfloat * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3i(TRint x, TRint y, TRint z)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3iv(const TRint * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3s(TRshort x, TRshort y, TRshort z)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex3sv(const TRshort * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4d(TRdouble x, TRdouble y, TRdouble z, TRdouble w)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4dv(const TRdouble * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4f(TRfloat x, TRfloat y, TRfloat z, TRfloat w)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4fv(const TRfloat * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4i(TRint x, TRint y, TRint z, TRint w)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4iv(const TRint * v)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4s(TRshort x, TRshort y, TRshort z, TRshort w)
+{
+	return TRvoid();
+}
+
+inline TRvoid trVertex4sv(const TRshort * v)
+{
+	return TRvoid();
 }
 
 TRvoid trEnable(TRenum mode)
@@ -214,18 +424,20 @@ TRvoid trHint()
 TRvoid trViewport(TRint x, TRint y, TRsizei width, TRsizei height)
 {
 	//第一次调用分配缓冲区空间
-	if (isAssignBuffer == false)
+	if (isAssignBuffer == TR_FALSE)
 	{
+		isAssignBuffer = TR_TRUE;
 		bufferheight = height;
 		bufferwidth = width;
 		//颜色缓冲打开
-		if (isOpenColorBuffer==true)
+		if (isOpenColorBuffer== TR_TRUE)
 		{
 			frontBuffer = (ColorRGBAf *)malloc(sizeof(ColorRGBAf)*bufferheight*bufferwidth);
 			backBuffer = (ColorRGBAf *)malloc(sizeof(ColorRGBAf)*bufferheight*bufferwidth);
+			currentColorBuffer = frontBuffer;
 		}
 		//深度缓冲打开
-		if (isOpenDepthBuffer == true)
+		if (isOpenDepthBuffer == TR_TRUE)
 		{
 			depthBuffer = (TRdouble *)malloc(sizeof(TRdouble)*bufferheight*bufferwidth);
 		}

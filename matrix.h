@@ -282,7 +282,7 @@ TRvoid trLoadMatrixd(TRdouble * m)
 //加载转置矩阵
 TRvoid trLoadTransposeMatrixf(TRfloat * m)
 {
-	TRint i, j, k;
+	TRint i, j;
 	for (i = 0; i < 4;++i)
 	{
 		for (j = 0; j < 4;++j)
@@ -294,7 +294,7 @@ TRvoid trLoadTransposeMatrixf(TRfloat * m)
 //加载转置矩阵
 TRvoid trLoadTransposeMatrixd(TRdouble * m)
 {
-	TRint i, j, k;
+	TRint i, j;
 	for (i = 0; i < 4; ++i)
 	{
 		for (j = 0; j < 4; ++j)
@@ -329,7 +329,6 @@ TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs)
 {
 	TRint i;
 	TRint j;
-	TRint k;
 	TRdouble temp[16];
 	for (i = 0; i < 4;++i)
 	{
