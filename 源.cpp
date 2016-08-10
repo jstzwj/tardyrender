@@ -12,25 +12,23 @@ void WinFlush(HWND hwnd,ColorRGBAf * src, TRuint w,TRuint h)
 
 	static TRuint oldw = w;
 	static TRuint oldh = h;
-	static UINT * winbuffer = (UINT *)malloc(sizeof(UINT)*w*h * 4);
+	static UINT * winbuffer = (UINT *)malloc(sizeof(UINT)*w*h);
 	if (oldw!=w||oldh!=h)
 	{
 		free(winbuffer);
-		winbuffer = (UINT *)malloc(sizeof(UINT)*w*h * 4);
+		winbuffer = (UINT *)malloc(sizeof(UINT)*w*h);
 	}
 	
 	for (int i = 0; i < h; ++i)
 	{
-		for (int j = 0; j < 4*w; j+=4)
+		for (int j = 0; j < w; ++j)
 		{
-			winbuffer[i*w *4 + j] = src[i*w + j>>2].red * 255;
-			winbuffer[i*w * 4 + j+1] = src[i*w + j>>2].green * 255;
-			winbuffer[i*w * 4 + j+2] = src[i*w + j>>2].blue * 255;
-			winbuffer[i*w * 4 + j+3] = src[i*w + j>>2].alpha * 255;
+			winbuffer[i*w + j] = (unsigned int)(src[i*w + j].alpha * 255)<<24;
+			winbuffer[i*w + j] |= (unsigned int)(src[i*w + j].red * 255)<<16;
+			winbuffer[i*w + j] |= (unsigned int)(src[i*w + j].green * 255)<<8;
+			winbuffer[i*w + j] |= (unsigned int)(src[i*w + j].blue * 255);
 		}
 	}
-
-
 
 	hdc = BeginPaint(hwnd, &ps);
 	//创建内存设备
@@ -45,9 +43,9 @@ void WinFlush(HWND hwnd,ColorRGBAf * src, TRuint w,TRuint h)
 	SelectObject(hmemorydc, bimp);
 
 	//画图，先画到内存设备上
-	BitBlt(hmemorydc, 0, 0, 1280, 800, (HDC)bimp, 0, 0, SRCCOPY);
+	BitBlt(hmemorydc, 0, 0, w, h, (HDC)bimp, 0, 0, SRCCOPY);
 	//内存设备画到屏幕设备上
-	BitBlt(hdc, 0, 0, 1280, 800, hmemorydc, 0, 0, SRCCOPY);
+	BitBlt(hdc, 0, 0, w, h, hmemorydc, 0, 0, SRCCOPY);
 	EndPaint(hwnd, &ps);
 
 	hdc = GetDC(hwnd);
@@ -70,7 +68,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//PlaySound(TEXT("hellowin.wav"), NULL, SND_FILENAME | SND_ASYNC);
 		//do something
 		//各种initialize
-		trClearColor(1.0, 1.0, 1.0, 1.0);
+		trClearColor(0.0, 0.0, 0.0, 1.0);
 		return 0;
 	case WM_SIZE:
 		GetWindowRect(hwnd,&rect);
@@ -87,8 +85,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hwnd, &ps);*/
 		//开始绘图
 		trClear(TR_COLOR_BUFFER_BIT | TR_DEPTH_BUFFER_BIT);
-		trBegin(TR_LINES);
-
+		trBegin(TR_POINTS);
+		trVertex4d(0.5,0.5,0.0,1.0);
 		trEnd();
 		WinFlush(hwnd, frontBuffer, rect.right - rect.left, rect.bottom - rect.top);
 		return 0;
@@ -111,7 +109,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	wndclass.hInstance = hInstance;
 	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	//wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wndclass.hbrBackground = NULL;
 	wndclass.lpszMenuName = NULL;
 	wndclass.lpszClassName = szAppName;
 	if (!RegisterClass(&wndclass))

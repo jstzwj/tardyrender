@@ -99,12 +99,16 @@ TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs);
 TRvoid trNormalizeVector(TRdouble *vec)
 {
 	double h = tardy_sqrt(vec[0]* vec[0]+ vec[1]* vec[1]+ vec[2]* vec[2]+ vec[3]* vec[3]);
-	vec[0] = vec[0] / h;
-	vec[1] = vec[1] / h;
-	vec[2] = vec[2] / h;
-	vec[3] = vec[3] / h;
+	if (h>1e-6)
+	{
+		vec[0] = vec[0] / h;
+		vec[1] = vec[1] / h;
+		vec[2] = vec[2] / h;
+		vec[3] = vec[3] / h;
+	}
 }
-
+//œÚ¡ø”“≥Àæÿ’Û
+TRvoid trVectorMultMatrix(TRdouble *v4d,TRdouble *m16d);
 
 
 
@@ -341,6 +345,20 @@ TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs)
 		}
 	}
 	trCopyMatrix(lhs,temp);
+}
+
+TRvoid trVectorMultMatrix(TRdouble * v4d, TRdouble * m16d)
+{
+	int i,j;
+	TRdouble result[4];
+	for (i = 0; i < 4;++i)
+	{
+		result[i] = v4d[0] * m16d[0 * 4 + i] + v4d[1] * m16d[1 * 4 + i] + v4d[2] * m16d[2 * 4 + i] + v4d[3] * m16d[3 * 4 + i];
+	}
+	v4d[0] = result[0];
+	v4d[1] = result[1];
+	v4d[2] = result[2];
+	v4d[3] = result[3];
 }
 
 
