@@ -45,27 +45,9 @@
     <ClInclude Include="error.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="img.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="render.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="vertex_buffer.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="源.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="error.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="math.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="matrix.c">
+    <ClCompile Include="源.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

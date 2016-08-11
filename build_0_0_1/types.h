@@ -1,8 +1,7 @@
 #pragma once
 #ifndef TYPES
 #define TYPES
-#include<stdint.h>
-#include<limits.h>
+#include<cstdint>
 
 #ifndef TARDY_VERSION
 #define TARDY_VERSION "0_0_1"
@@ -43,11 +42,6 @@ typedef void TRvoid;
 typedef int* TRsizeiptr,* TRintptr;
 #define TARDY_API _stdcall 
 
-#define BYTE_MAX 127
-#define BYTE_MIN -128
-
-#define UBYTE_MAX 255
-#define UBYTE_MIN -256
 
 //color struct
 struct ColorRGBAf

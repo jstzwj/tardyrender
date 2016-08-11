@@ -12,40 +12,21 @@
 
 //ƒ£–Õæÿ’Û
 #define TR_MODELVIEW 1
-TRdouble ModelViewMatrix[16]= { 
-	1.0,0.0,0.0,0.0,
-	0.0,1.0,0.0,0.0,
-	0.0,0.0,1.0,0.0,
-	0.0,0.0,0.0,1.0 };
+extern TRdouble ModelViewMatrix[16];
 //Õ∂”∞æÿ’Û
 #define TR_PROJECTION 2
-TRdouble ProjectionMatrix[16] = {
-	1.0,0.0,0.0,0.0,
-	0.0,1.0,0.0,0.0,
-	0.0,0.0,1.0,0.0,
-	0.0,0.0,0.0,1.0 };
+extern TRdouble ProjectionMatrix[16];
 //Œ∆¿Ìæÿ’Û
 #define TR_TEXTURE  3
-TRdouble TextureMatrix[16] = { 
-	1.0,0.0,0.0,0.0,
-	0.0,1.0,0.0,0.0,
-	0.0,0.0,1.0,0.0,
-	0.0,0.0,0.0,1.0 };
+extern TRdouble TextureMatrix[16];
 //—’…´æÿ’Û
 #define TR_COLOR 4
-TRdouble ColorMatrix[16] = { 
-	1.0,0.0,0.0,0.0,
-	0.0,1.0,0.0,0.0,
-	0.0,0.0,1.0,0.0,
-	0.0,0.0,0.0,1.0 };
+extern TRdouble ColorMatrix[16];
 //µ±«∞ƒ£–Õ
-TRdouble* CurrentMatrix=ModelViewMatrix;
+extern TRdouble* CurrentMatrix;
 
 //µ•Œªæÿ’Û
-TRdouble IdentityMatrix[16] = { 1.0,0.0,0.0,0.0,
-								0.0,1.0,0.0,0.0,
-								0.0,0.0,1.0,0.0,
-								0.0,0.0,0.0,1.0 };
+extern TRdouble IdentityMatrix[16];
 
 
 //—°‘ÒÕ∂”∞æÿ’Û
@@ -87,8 +68,8 @@ TRvoid trOrtho(TRdouble left, TRdouble right, TRdouble bottom, TRdouble top, TRd
 
 //matrix stack
 #define MATRIX_STACK_MAX 32
-TRdouble matrix_stack[MATRIX_STACK_MAX][16];
-TRint stackTop=0;
+extern TRdouble matrix_stack[MATRIX_STACK_MAX][16];
+extern TRint stackTop;
 
 //toolkit
 //∏¥÷∆æÿ’Û
@@ -96,270 +77,9 @@ TRvoid trCopyMatrix(TRdouble * to,TRdouble * from);
 //æÿ’Ûœ‡≥À
 TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs);
 //œÚ¡øπÈ“ªªØ
-TRvoid trNormalizeVector(TRdouble *vec)
-{
-	double h = tardy_sqrt(vec[0]* vec[0]+ vec[1]* vec[1]+ vec[2]* vec[2]+ vec[3]* vec[3]);
-	if (h>1e-6)
-	{
-		vec[0] = vec[0] / h;
-		vec[1] = vec[1] / h;
-		vec[2] = vec[2] / h;
-		vec[3] = vec[3] / h;
-	}
-}
+TRvoid trNormalizeVector(TRdouble *vec);
 //œÚ¡ø”“≥Àæÿ’Û
 TRvoid trVectorMultMatrix(TRdouble *v4d,TRdouble *m16d);
-
-
-
-
-TRvoid trMatrixMode(TRenum mode)
-{
-	switch (mode)
-	{
-	case TR_MODELVIEW:
-		CurrentMatrix = ModelViewMatrix;
-		break;
-	case TR_PROJECTION:
-		CurrentMatrix = ProjectionMatrix;
-		break;
-	case TR_TEXTURE:
-		CurrentMatrix = TextureMatrix;
-		break;
-	case TR_COLOR:
-		CurrentMatrix = ColorMatrix;
-		break;
-	default:
-		//TODO error
-		CurrentMatrix = NULL;
-		return;
-		break;
-	}
-}
-//º”‘ÿµ•Œªæÿ’Û
-TRvoid trLoadIdentity()
-{
-	trCopyMatrix(CurrentMatrix,IdentityMatrix);
-}
-//∆Ω“∆æÿ’Û
-TRvoid trTranslatef(TRfloat x, TRfloat y, TRfloat z)
-{
-	TRdouble temp[16];
-	trCopyMatrix(temp,IdentityMatrix);
-	temp[3 * 4 + 0] = x;
-	temp[3 * 4 + 1] = y;
-	temp[3 * 4 + 2] = z;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix,temp);
-}
-//∆Ω“∆æÿ’Û
-TRvoid trTranslated(TRdouble x, TRdouble y, TRdouble z)
-{
-	TRdouble temp[16];
-	trCopyMatrix(temp, IdentityMatrix);
-	temp[3 * 4 + 0] = x;
-	temp[3 * 4 + 1] = y;
-	temp[3 * 4 + 2] = z;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix, temp);
-}
-TRvoid trRotated(TRdouble angle, TRdouble x, TRdouble y, TRdouble z)
-{
-	TRdouble temp[16];
-	TRdouble h;
-	TRdouble sinangle;
-	TRdouble cosangle;
-	sinangle = tardy_sin(angle);
-	cosangle = tardy_cos(angle);
-	h = tardy_sqrt(x*x + y*y + z*z);
-	if (h != 1)
-	{
-		x = x / h;
-		y = y / h;
-		z = z / h;
-	}
-	temp[0 * 4 + 0] = x*x+(1-x*x)*cosangle;
-	temp[0 * 4 + 1] = x*y*(1-cosangle)+z*sinangle;
-	temp[0 * 4 + 2] = x*z*(1-cosangle)-y*sinangle;
-	temp[0 * 4 + 3] = 0;
-	temp[1 * 4 + 0] = x*y*(1-cosangle)-z*sinangle;
-	temp[1 * 4 + 1] = y*y+(1-y*y)*cosangle;
-	temp[1 * 4 + 2] = y*z*(1-cosangle)+x*sinangle;
-	temp[1 * 4 + 3] = 0;
-	temp[2 * 4 + 0] = x*z*(1-cosangle)+y*sinangle;
-	temp[2 * 4 + 1] = y*z*(1-cosangle)-x*sinangle;
-	temp[2 * 4 + 2] = z*z+(1-z*z)*cosangle;
-	temp[2 * 4 + 3] = 0;
-	temp[3 * 4 + 0] = 0;
-	temp[3 * 4 + 1] = 0;
-	temp[3 * 4 + 2] = 0;
-	temp[3 * 4 + 3] = 1;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix, temp);
-}
-TRvoid trRotatef(TRfloat angle, TRfloat x, TRfloat y, TRfloat z)
-{
-	TRdouble temp[16];
-	TRfloat h;
-	TRdouble sinangle;
-	TRdouble cosangle;
-	sinangle = tardy_sin(angle);
-	cosangle = tardy_cos(angle);
-	h = (TRfloat)tardy_sqrt(x*x + y*y + z*z);
-	if (h != 1&&h>1e-6)
-	{
-		x = x / h;
-		y = y / h;
-		z = z / h;
-	}
-	temp[0 * 4 + 0] = x*x + (1 - x*x)*cosangle;
-	temp[0 * 4 + 1] = x*y*(1 - cosangle) + z*sinangle;
-	temp[0 * 4 + 2] = x*z*(1 - cosangle) - y*sinangle;
-	temp[0 * 4 + 3] = 0;
-	temp[1 * 4 + 0] = x*y*(1 - cosangle) - z*sinangle;
-	temp[1 * 4 + 1] = y*y + (1 - y*y)*cosangle;
-	temp[1 * 4 + 2] = y*z*(1 - cosangle) + x*sinangle;
-	temp[1 * 4 + 3] = 0;
-	temp[2 * 4 + 0] = x*z*(1 - cosangle) + y*sinangle;
-	temp[2 * 4 + 1] = y*z*(1 - cosangle) - x*sinangle;
-	temp[2 * 4 + 2] = z*z + (1 - z*z)*cosangle;
-	temp[2 * 4 + 3] = 0;
-	temp[3 * 4 + 0] = 0;
-	temp[3 * 4 + 1] = 0;
-	temp[3 * 4 + 2] = 0;
-	temp[3 * 4 + 3] = 1;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix, temp);
-}
-//Àı∑≈æÿ’Û
-TRvoid trScalef(TRfloat x, TRfloat y, TRfloat z)
-{
-	TRdouble temp[16];
-	trCopyMatrix(temp, IdentityMatrix);
-	temp[0 * 4 + 0] = x;
-	temp[1 * 4 + 1] = y;
-	temp[2 * 4 + 2] = z;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix, temp);
-}
-//Àı∑≈æÿ’Û
-TRvoid trScaled(TRdouble x, TRdouble y, TRdouble z)
-{
-	TRdouble temp[16];
-	trCopyMatrix(temp, IdentityMatrix);
-	temp[0 * 4 + 0] = x;
-	temp[1 * 4 + 1] = y;
-	temp[2 * 4 + 2] = z;
-	//œ‡≥À
-	trMultiMatrix(CurrentMatrix, temp);
-}
-TRvoid trMultMatrixf(TRfloat * m)
-{
-	TRint i;
-	TRdouble tmp[16];
-	for (i = 0; i < 16;++i)
-	{
-		tmp[i] = m[i];
-	}
-	trMultiMatrix(matrix_stack[stackTop],tmp);
-}
-TRvoid trMultMatrixd(TRdouble * m)
-{
-	trMultiMatrix(matrix_stack[stackTop], m);
-}
-//º”‘ÿæÿ’Û
-TRvoid trLoadMatrixf(TRfloat * m)
-{
-	TRint i;
-	TRdouble tmp[16];
-	for (i = 0; i < 16; ++i)
-	{
-		tmp[i] = m[i];
-	}
-	trCopyMatrix(CurrentMatrix, tmp);
-}
-//º”‘ÿæÿ’Û
-TRvoid trLoadMatrixd(TRdouble * m)
-{
-	trCopyMatrix(CurrentMatrix, m);
-}
-//º”‘ÿ◊™÷√æÿ’Û
-TRvoid trLoadTransposeMatrixf(TRfloat * m)
-{
-	TRint i, j;
-	for (i = 0; i < 4;++i)
-	{
-		for (j = 0; j < 4;++j)
-		{
-			CurrentMatrix[j*4+i] = m[i*4+j];
-		}
-	}
-}
-//º”‘ÿ◊™÷√æÿ’Û
-TRvoid trLoadTransposeMatrixd(TRdouble * m)
-{
-	TRint i, j;
-	for (i = 0; i < 4; ++i)
-	{
-		for (j = 0; j < 4; ++j)
-		{
-			CurrentMatrix[j * 4 + i] = m[i * 4 + j];
-		}
-	}
-}
-//—π»Îæÿ’Û
-TRvoid trPushMatrix(TRdouble * m)
-{
-	trCopyMatrix(matrix_stack[stackTop],CurrentMatrix);
-	++stackTop;
-}
-//µØ≥ˆæÿ’Û
-inline TRvoid trPopMatrix(TRdouble * m)
-{
-	trCopyMatrix(CurrentMatrix, matrix_stack[stackTop]);
-	--stackTop;
-}
-//∏¥÷∆æÿ’Û
-TRvoid trCopyMatrix(TRdouble * to, TRdouble * from)
-{
-	TRint i;
-	for (i = 0; i < 16;++i)
-	{
-		to[i] = from[i];
-	}
-}
-//”“≥Àæÿ’Û
-TRvoid trMultiMatrix(TRdouble * lhs, TRdouble * rhs)
-{
-	TRint i;
-	TRint j;
-	TRdouble temp[16];
-	for (i = 0; i < 4;++i)
-	{
-		for (j = 0; j < 4;++j)
-		{
-			temp[i*4+j] = lhs[i * 4 + 0] * rhs[j * 4 + 0] + 
-					lhs[i * 4 + 1] * rhs[j * 4 + 1]+
-					lhs[i * 4 + 2] * rhs[j * 4 + 2]+
-					lhs[i * 4 + 3] * rhs[j * 4 + 3];
-		}
-	}
-	trCopyMatrix(lhs,temp);
-}
-
-TRvoid trVectorMultMatrix(TRdouble * v4d, TRdouble * m16d)
-{
-	int i,j;
-	TRdouble result[4];
-	for (i = 0; i < 4;++i)
-	{
-		result[i] = v4d[0] * m16d[0 * 4 + i] + v4d[1] * m16d[1 * 4 + i] + v4d[2] * m16d[2 * 4 + i] + v4d[3] * m16d[3 * 4 + i];
-	}
-	v4d[0] = result[0];
-	v4d[1] = result[1];
-	v4d[2] = result[2];
-	v4d[3] = result[3];
-}
 
 
 

@@ -34,43 +34,43 @@ void trGenBuffers(TRsizei n, TRuint * arrys)
 {
 }
 
-TRbool trIsBuffer(TRuint buffer)
+inline TRbool trIsBuffer(TRuint buffer)
 {
 	return TRbool();
 }
 
-TRvoid * trMapBuffer(TRenum target, TRenum access)
+inline TRvoid * trMapBuffer(TRenum target, TRenum access)
 {
 	return NULL;
 }
 
-TRbool * trUnMapBuffer(TRenum target)
+inline TRbool * trUnMapBuffer(TRenum target)
 {
 	return NULL;
 }
 
-TRvoid trCopyBufferSubData(TRenum readbuffer, TRenum writebuffer, TRintptr readoffset, TRintptr writeoffset, TRsizeiptr size)
+inline TRvoid trCopyBufferSubData(TRenum readbuffer, TRenum writebuffer, TRintptr readoffset, TRintptr writeoffset, TRsizeiptr size)
 {
-	return;
+	return TRvoid();
 }
 
-TRvoid trBufferData(TRenum target, TRsizei size, const TRvoid * data, TRenum usage)
+inline TRvoid trBufferData(TRenum target, TRsizei size, const TRvoid * data, TRenum usage)
 {
-	return;
+	return TRvoid();
 }
 
-TRvoid trBindBuffer(TRenum target, TRuint buffer)
+inline TRvoid trBindBuffer(TRenum target, TRuint buffer)
 {
-	return;
+	return TRvoid();
 }
 
-void trBufferData(TRenum target, TRsizeiptr size, const TRvoid * data, TRenum usage)
+inline void trBufferData(TRenum target, TRsizeiptr size, const TRvoid * data, TRenum usage)
 {
 }
 
-TRvoid trDeleteBuffers(TRsizei n, TRuint * buffers)
+inline TRvoid trDeleteBuffers(TRsizei n, TRuint * buffers)
 {
-	return;
+	return TRvoid();
 }
 
 

@@ -45,22 +45,22 @@ TRvoid trLineWidth(TRdouble width)
 }
 TRvoid trGetFloatv(TRenum mode)
 {
-	return;
+	return TRvoid();
 }
 TRvoid trLineStipple(TRint n, TRenum mode)
 {
-	return;
+	return TRvoid();
 }
 TRvoid trPolygonMode(TRenum face, TRenum mode)
 {
-	return ;
+	return TRvoid();
 }
 TRvoid trFrontFace(TRenum mode)
 {
-	return;
+	return TRvoid();
 }
 TRvoid trCullFace()
 {
-	return;
+	return TRvoid();
 }
 #endif // !SHAPE

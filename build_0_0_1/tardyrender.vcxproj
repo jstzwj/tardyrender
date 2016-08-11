@@ -93,10 +93,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <StackCommitSize>
-      </StackCommitSize>
-      <StackReserveSize>
-      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,7 +147,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="error.h" />
-    <ClInclude Include="img.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="objects.h" />
@@ -163,12 +158,7 @@
     <ClInclude Include="vertex_buffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="error.c" />
-    <ClCompile Include="math.c" />
-    <ClCompile Include="matrix.c" />
-    <ClCompile Include="render.c" />
-    <ClCompile Include="vertex_buffer.c" />
-    <ClCompile Include="源.c" />
+    <ClCompile Include="源.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
