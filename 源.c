@@ -83,6 +83,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	//HDC hdc;
 	//PAINTSTRUCT ps;
 	static RECT rect;
+	double m;
 	//HBRUSH NewBrush;
 
 	switch (message)
@@ -108,11 +109,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hwnd, &ps);*/
 		//¿ªÊ¼»æÍ¼
 		trClear(TR_COLOR_BUFFER_BIT | TR_DEPTH_BUFFER_BIT);
-		trBegin(TR_LINES);
-		trColor3f(1.0,0.0,0.0);
-		trVertex4d(0.0, 0.0, 0.0, 1.0);
-		trColor3f(0.0, 1.0, 0.0);
-		trVertex4d(0.5,0.5,0.0,1.0);
+		trBegin(TR_POLYGON);
+
+		trColor3f(1.0, 0.0, 0.0);
+		for (m = 0; m < 360;m+=1)
+		{
+			trVertex4d(tardy_sin(m), tardy_cos(m), 0.0, 1.0);
+		}
+		/*trVertex4d(0.0, 0.0, 0.0, 1.0);
+		trVertex4d(tardy_sin(0.0), tardy_cos(0.0), 0.0, 1.0);
+		trVertex4d(tardy_sin(90.0), tardy_cos(90.0), 0.0, 1.0);*/
 		trEnd();
 		WinFlush(hwnd, frontBuffer, rect.right - rect.left, rect.bottom - rect.top);
 		return 0;

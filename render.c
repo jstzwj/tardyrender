@@ -322,8 +322,19 @@ TRvoid trDrawLine(TRdouble * start, ColorRGBAf startcolor, TRdouble * end, Color
 
 }
 
-TRvoid trDrawTriangle(TRdouble * v1, TRdouble * v2, TRdouble * v3)
+//切开三角形再画
+TRvoid trDrawTriangle(TRdouble * v1,ColorRGBAf c1, TRdouble * v2, ColorRGBAf c2, TRdouble * v3,ColorRGBAf c3 )
 {
+	TRdouble *x_max, *x_min,*x_other;
+	TRdouble *y_max, *y_min,*y_other;
+
+	TRdouble other[4];
+	TRint line;
+	TRint linepoint;
+	TRint allMax;	//总步长
+	ColorRGBAf co;	//颜色
+	TRdouble start[4], end[4];
+
 	//归一化
 	if (v1[3] != 0)
 	{
@@ -346,9 +357,165 @@ TRvoid trDrawTriangle(TRdouble * v1, TRdouble * v2, TRdouble * v3)
 		v3[2] /= v3[3];
 		v3[3] = 1.0;
 	}
-	//获取三角形外的矩形
-
-
+	//三角形光栅化开始了
+	//求x轴方向最大距离
+	if (v1[0]>v2[0])
+	{
+		if (v2[0]>v3[0])
+		{
+			x_max = v1;
+			x_min = v3;
+			x_other = v2;
+		}
+		else
+		{
+			if (v1[0]>v3[0])
+			{
+				x_max = v1;
+				x_min = v2;
+				x_other = v3;
+			}
+			else
+			{
+				x_max = v3;
+				x_min = v2;
+				x_other = v1;
+			}
+		}
+	}
+	else
+	{
+		if (v1[0]>v3[0])
+		{
+			x_max = v2;
+			x_min = v3;
+			x_other = v1;
+		}
+		else
+		{
+			if (v2[0]>v3[0])
+			{
+				x_max = v2;
+				x_min = v1;
+				x_other = v3;
+			}
+			else
+			{
+				x_max = v3;
+				x_min = v1;
+				x_other = v2;
+			}
+		}
+	}
+	//求y轴方向最大距离
+	if (v1[1]>v2[1])
+	{
+		if (v2[1]>v3[1])
+		{
+			y_max = v1;
+			y_min = v3;
+			y_other = v2;
+		}
+		else
+		{
+			if (v1[1]>v3[1])
+			{
+				y_max = v1;
+				y_min = v2;
+				y_other = v3;
+			}
+			else
+			{
+				y_max = v3;
+				y_min = v2;
+				y_other = v1;
+			}
+		}
+	}
+	else
+	{
+		if (v1[1]>v3[1])
+		{
+			y_max = v2;
+			y_min = v3;
+			y_other = v1;
+		}
+		else
+		{
+			if (v2[1]>v3[1])
+			{
+				y_max = v2;
+				y_min = v1;
+				y_other = v3;
+			}
+			else
+			{
+				y_max = v3;
+				y_min = v1;
+				y_other = v2;
+			}
+		}
+	}
+	//使用扫描线光栅化三角形
+	//if (y_max[1]-y_min[1]>x_max[0]-x_min[0])
+	//{
+	//}
+	//else
+	//{	
+	//}
+	allMax = y_other[1] * bufferheight - y_min[1] * bufferheight;
+	for (line = y_min[1] * bufferheight; line < y_other[1] * bufferheight; ++line)
+	{
+		start[0] = ((TRdouble)line/ bufferheight-y_min[1])*(y_min[0]-y_other[0])/(y_min[1]-y_other[1])+y_min[0];
+		start[1] = line;
+		start[2] = y_min[2]+(y_other[2]-y_min[2])*line/allMax;
+		start[3] = 1.0;
+		end[0] = ((TRdouble)line / bufferheight - y_min[1])*(y_min[0] - y_max[0]) / (y_min[1] - y_max[1]) + y_min[0];
+		end[1] = line;
+		end[2] = y_min[2] + (y_other[2] - y_min[2])*line / allMax;
+		end[3] = 1.0;
+		if (start[0] < end[0])
+		{
+			for (linepoint = start[0] * bufferwidth; linepoint < end[0] * bufferwidth; ++linepoint)
+			{
+				trPutPoint(linepoint, line, 0.0, currentColor);
+			}
+		}
+		else
+		{
+			for (linepoint = end[0] * bufferwidth; linepoint < start[0] * bufferwidth; ++linepoint)
+			{
+				trPutPoint(linepoint, line, 0.0, currentColor);
+			}
+		}
+		
+	}
+	for (line = y_other[1] * bufferheight; line < y_max[1] * bufferheight; ++line)
+	{
+		start[0] = ((TRdouble)line / bufferheight - y_max[1])*(y_max[0] - y_other[0]) / (y_max[1] - y_other[1]) + y_max[0];
+		start[1] = line;
+		start[2] = y_max[2] + (y_other[2] - y_max[2])*line / allMax;
+		start[3] = 1.0;
+		end[0] = ((TRdouble)line / bufferheight - y_min[1])*(y_min[0] - y_max[0]) / (y_min[1] - y_max[1]) + y_min[0];
+		end[1] = line;
+		end[2] = y_min[2] + (y_max[2] - y_min[2])*line / allMax;
+		end[3] = 1.0;
+		if (start[0] < end[0])
+		{
+			for (linepoint = start[0] * bufferwidth; linepoint < end[0] * bufferwidth; ++linepoint)
+			{
+				trPutPoint(linepoint, line, 0.0, currentColor);
+			}
+		}
+		else
+		{
+			for (linepoint = end[0] * bufferwidth; linepoint < start[0] * bufferwidth; ++linepoint)
+			{
+				trPutPoint(linepoint, line, 0.0, currentColor);
+			}
+		}
+		
+	}
 }
 //vertex系列函数都会调用这个
 TRvoid trVertex(const TRdouble * v)
@@ -431,7 +598,7 @@ TRvoid trVertex(const TRdouble * v)
 		}
 		else
 		{
-			trDrawTriangle(vec1, vec2, vec);
+			trDrawTriangle(vec1,color1, vec2,color2, vec,currentColor);
 			//复制向量
 			//上一个点
 			vec2[0] = vec[0];
@@ -443,6 +610,34 @@ TRvoid trVertex(const TRdouble * v)
 		}
 		break;
 	case TR_TRIANGLES:
+		++vec_num;
+		if (vec_num == 1)
+		{
+			//复制向量
+			//起点
+			vec1[0] = vec[0];
+			vec1[1] = vec[1];
+			vec1[2] = vec[2];
+			vec1[3] = vec[3];
+			//起点颜色赋值
+			color1 = currentColor;
+		}
+		else if (vec_num == 2)
+		{
+			//复制向量
+			//上一个点
+			vec2[0] = vec[0];
+			vec2[1] = vec[1];
+			vec2[2] = vec[2];
+			vec2[3] = vec[3];
+			//颜色赋值
+			color2 = currentColor;
+		}
+		else
+		{
+			trDrawTriangle(vec1, color1, vec2, color2, vec, currentColor);
+			vec_num = 0;
+		}
 		break;
 	case TR_QUADS:
 		break;

@@ -122,8 +122,8 @@ double tardy_cos(double n)
 	int i;
 	int k = 1;
 	double sum = 0.0;
-	double sin = 1.0;
-	double cos = 0.0;
+	double sin = 0.0;
+	double cos = 1.0;
 	double sintemp;
 	double costemp;
 	if (n < 0)
