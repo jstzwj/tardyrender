@@ -1,5 +1,5 @@
 # tardyrender
-It is a simple graphic render, which is write in c++. The render can work  without GPU.
+It is a simple graphic render, which is write in pure c. The render can work  without GPU.
 
 ===
 Platform
